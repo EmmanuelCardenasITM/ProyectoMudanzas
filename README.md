@@ -21,22 +21,22 @@ API REST para gestión de servicios de mudanza. Arquitectura por capas (Controll
 sistema-mudanzas/
 ├── src/main/java/com/mudanzas/
 │   ├── config/
-│   │   ├── DatabaseConnection.java   # Conexión JDBC manual
-│   │   ├── JwtUtil.java              # Generación y validación JWT
-│   │   └── SwaggerConfig.java        # Configuración JAX-RS + Swagger
+│   │   ├── DatabaseConnection.java    Conexión JDBC manual
+│   │   ├── JwtUtil.java               Generación y validación JWT
+│   │   └── SwaggerConfig.java         Configuración JAX-RS + Swagger
 │   ├── filter/
-│   │   └── AuthFilter.java           # Filtro de autenticación JWT
-│   ├── model/                        # Entidades (Cliente, Servicio, Pago, Tarifa, Usuario)
-│   ├── dao/                          # Capa de persistencia — SQL puro con JDBC
-│   ├── service/                      # Capa de lógica de negocio
-│   └── controller/                   # Capa de presentación — endpoints REST
+│   │   └── AuthFilter.java            Filtro de autenticación JWT
+│   ├── model/                         Entidades (Cliente, Servicio, Pago, Tarifa, Usuario)
+│   ├── dao/                           Capa de persistencia — SQL puro con JDBC
+│   ├── service/                       Capa de lógica de negocio
+│   └── controller/                    Capa de presentación — endpoints REST
 ├── src/main/resources/
-│   └── config.properties             # Configuración de BD y JWT
+│   └── config.properties              Configuración de BD y JWT
 ├── src/main/webapp/WEB-INF/
-│   └── web.xml                       # Configuración del servlet
+│   └── web.xml                        Configuración del servlet
 ├── database/
-│   ├── schema.sql                    # DDL — crear tablas
-│   └── seed.sql                      # Datos iniciales
+│   ├── schema.sql                     DDL — crear tablas
+│   └── seed.sql                       Datos iniciales
 └── pom.xml
 ```
 
