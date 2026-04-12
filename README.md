@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Sistema de Mudanzas — API REST (Java)
 
 API REST para gestión de servicios de mudanza. Arquitectura por capas (Controller → Service → DAO), MySQL con JDBC puro, autenticación JWT y documentación Swagger/OpenAPI.
@@ -136,3 +137,7 @@ git checkout -b feature/modulo-servicios
 git checkout -b feature/modulo-pagos
 git checkout -b feature/modulo-tarifas
 ```
+=======
+# ProyectoMudanzas
+Repositorio del proyecto para el sistema de gestión de mudanzas.
+>>>>>>> ca75512b2f0787230656c698d30c509bad042d48
