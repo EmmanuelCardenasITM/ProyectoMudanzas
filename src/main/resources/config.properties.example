@@ -1,0 +1,16 @@
+# Copia este archivo como config.properties y ajusta los valores
+
+# Base de datos - Microsoft SQL Server
+# Opcion 1: Windows Authentication
+db.url=jdbc:sqlserver://localhost:1433;databaseName=sistema_mudanzas;encrypt=false;trustServerCertificate=true;integratedSecurity=true
+db.user=
+db.password=
+
+# Opcion 2: SQL Server Authentication
+# db.url=jdbc:sqlserver://localhost:1433;databaseName=sistema_mudanzas;encrypt=false;trustServerCertificate=true
+# db.user=sa
+# db.password=tu_password
+
+# JWT
+jwt.secret=un_secreto_muy_seguro_de_al_menos_32_caracteres
+jwt.expiration.hours=8
