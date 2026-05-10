@@ -19,8 +19,7 @@ target/
 # Kiro
 .kiro/
 
-# Configuracion local con credenciales (NO subir)
-src/main/resources/config.properties
+
 
 # Logs
 *.log
