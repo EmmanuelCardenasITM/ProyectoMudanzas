@@ -1,6 +1,5 @@
 package com.mudanzas.controller;
 
-import com.mudanzas.model.Cliente;
 import com.mudanzas.service.ClienteService;
 import io.jsonwebtoken.Claims;
 import io.swagger.v3.oas.annotations.Operation;
@@ -15,15 +14,16 @@ import java.util.Map;
 
 /**
  * Controlador REST para la gestión de clientes.
- * GET /api/clientes
- * GET /api/clientes/{id}
- * POST /api/clientes
- * PUT /api/clientes/{id}
+ * GET    /api/clientes
+ * GET    /api/clientes/{id}
+ * GET    /api/clientes/{id}/historial
+ * POST   /api/clientes
+ * PUT    /api/clientes/{id}
  * DELETE /api/clientes/{id}
  */
 @RestController
 @RequestMapping("/api/clientes")
-@Tag(name = "Clientes", description = "Gestión de clientes del sistema de mudanzas")
+@Tag(name = "Clientes", description = "Registro y gestión de clientes")
 @SecurityRequirement(name = "bearerAuth")
 public class ClienteController {
 
@@ -31,13 +31,12 @@ public class ClienteController {
 
     @GetMapping
     @Operation(summary = "Listar todos los clientes",
-               responses = { @ApiResponse(responseCode = "200", description = "Lista de clientes"),
-                             @ApiResponse(responseCode = "401", description = "Autenticación requerida") })
+               responses = { @ApiResponse(responseCode = "200", description = "Lista de clientes") })
     public ResponseEntity<?> listarClientes() {
         try {
-            return ResponseEntity.ok(clienteService.listarClientes());
+            return ResponseEntity.ok(Map.of("success", true, "data", clienteService.listarClientes()));
         } catch (Exception e) {
-            return error(500, "Error interno del servidor");
+            return error(500, "Error interno del servidor.");
         }
     }
 
@@ -47,73 +46,104 @@ public class ClienteController {
                              @ApiResponse(responseCode = "404", description = "Cliente no encontrado") })
     public ResponseEntity<?> obtenerCliente(@PathVariable int id) {
         try {
-            return ResponseEntity.ok(clienteService.obtenerCliente(id));
+            return ResponseEntity.ok(Map.of("success", true, "data", clienteService.obtenerCliente(id)));
         } catch (IllegalArgumentException e) {
             return error(404, e.getMessage());
         } catch (Exception e) {
-            return error(500, "Error interno del servidor");
+            return error(500, "Error interno del servidor.");
+        }
+    }
+
+    @GetMapping("/{id}/historial")
+    @Operation(summary = "Obtener historial de servicios de un cliente",
+               responses = { @ApiResponse(responseCode = "200", description = "Historial de servicios"),
+                             @ApiResponse(responseCode = "404", description = "Cliente no encontrado") })
+    public ResponseEntity<?> obtenerHistorial(@PathVariable int id) {
+        try {
+            return ResponseEntity.ok(Map.of("success", true, "data", clienteService.obtenerHistorial(id)));
+        } catch (IllegalArgumentException e) {
+            return error(404, e.getMessage());
+        } catch (Exception e) {
+            return error(500, "Error interno del servidor.");
         }
     }
 
     @PostMapping
-    @Operation(summary = "Crear nuevo cliente",
-               description = "Solo accesible para Administradores.",
-               responses = { @ApiResponse(responseCode = "201", description = "Cliente creado"),
-                             @ApiResponse(responseCode = "400", description = "Campos inválidos"),
+    @Operation(summary = "Registrar un nuevo cliente",
+               description = "Solo Administradores. Crea usuario + perfil de cliente.",
+               responses = { @ApiResponse(responseCode = "201", description = "Cliente registrado"),
+                             @ApiResponse(responseCode = "409", description = "Email ya registrado"),
                              @ApiResponse(responseCode = "403", description = "Acceso denegado") })
-    public ResponseEntity<?> crearCliente(@RequestBody Cliente cliente, Authentication auth) {
-        if (!esAdmin(auth)) return error(403, "Acceso denegado");
+    public ResponseEntity<?> crearCliente(@RequestBody Map<String, String> body, Authentication auth) {
+        if (!esAdminOEmpleado(auth)) return error(403, "Acceso denegado.");
         try {
-            return ResponseEntity.status(201).body(clienteService.crearCliente(cliente));
+            return ResponseEntity.status(201).body(Map.of(
+                "success", true,
+                "message", "Cliente registrado exitosamente.",
+                "data", clienteService.crearCliente(body)
+            ));
+        } catch (IllegalStateException e) {
+            return error(409, e.getMessage());
         } catch (IllegalArgumentException e) {
             return error(400, e.getMessage());
         } catch (Exception e) {
-            return error(500, "Error interno del servidor");
+            return error(500, "Error interno del servidor.");
         }
     }
 
     @PutMapping("/{id}")
-    @Operation(summary = "Actualizar cliente",
-               description = "Solo accesible para Administradores.",
+    @Operation(summary = "Actualizar datos de un cliente",
+               description = "Solo Administradores.",
                responses = { @ApiResponse(responseCode = "200", description = "Cliente actualizado"),
                              @ApiResponse(responseCode = "404", description = "Cliente no encontrado") })
     public ResponseEntity<?> actualizarCliente(@PathVariable int id,
-                                               @RequestBody Cliente cliente,
+                                               @RequestBody Map<String, String> body,
                                                Authentication auth) {
-        if (!esAdmin(auth)) return error(403, "Acceso denegado");
+        if (!esAdmin(auth)) return error(403, "Acceso denegado.");
         try {
-            return ResponseEntity.ok(clienteService.actualizarCliente(id, cliente));
+            return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "Cliente actualizado.",
+                "data", clienteService.actualizarCliente(id, body)
+            ));
         } catch (IllegalArgumentException e) {
-            return error(e.getMessage().contains("no encontrado") ? 404 : 400, e.getMessage());
+            return error(404, e.getMessage());
         } catch (Exception e) {
-            return error(500, "Error interno del servidor");
+            return error(500, "Error interno del servidor.");
         }
     }
 
     @DeleteMapping("/{id}")
-    @Operation(summary = "Eliminar cliente",
-               description = "Solo accesible para Administradores.",
-               responses = { @ApiResponse(responseCode = "204", description = "Cliente eliminado"),
+    @Operation(summary = "Eliminar un cliente",
+               description = "Solo Administradores.",
+               responses = { @ApiResponse(responseCode = "200", description = "Cliente eliminado"),
                              @ApiResponse(responseCode = "404", description = "Cliente no encontrado") })
     public ResponseEntity<?> eliminarCliente(@PathVariable int id, Authentication auth) {
-        if (!esAdmin(auth)) return error(403, "Acceso denegado");
+        if (!esAdmin(auth)) return error(403, "Acceso denegado.");
         try {
             clienteService.eliminarCliente(id);
-            return ResponseEntity.noContent().build();
+            return ResponseEntity.ok(Map.of("success", true, "message", "Cliente eliminado correctamente."));
         } catch (IllegalArgumentException e) {
             return error(404, e.getMessage());
         } catch (Exception e) {
-            return error(500, "Error interno del servidor");
+            return error(500, "Error interno del servidor.");
         }
     }
 
     private boolean esAdmin(Authentication auth) {
         if (auth == null) return false;
-        Claims claims = (Claims) auth.getPrincipal();
-        return "ADMINISTRADOR".equals(claims.get("rol", String.class));
+        String rol = ((Claims) auth.getPrincipal()).get("rol", String.class);
+        return "administrador".equalsIgnoreCase(rol) || "ADMINISTRADOR".equals(rol);
+    }
+
+    private boolean esAdminOEmpleado(Authentication auth) {
+        if (auth == null) return false;
+        String rol = ((Claims) auth.getPrincipal()).get("rol", String.class);
+        return "administrador".equalsIgnoreCase(rol) || "ADMINISTRADOR".equals(rol)
+            || "empleado".equalsIgnoreCase(rol) || "EMPLEADO".equals(rol);
     }
 
     private ResponseEntity<?> error(int status, String message) {
-        return ResponseEntity.status(status).body(Map.of("error", Map.of("message", message)));
+        return ResponseEntity.status(status).body(Map.of("success", false, "message", message));
     }
 }

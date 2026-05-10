@@ -21,9 +21,8 @@ public class SwaggerConfig {
         return new OpenAPI()
                 .info(new Info()
                         .title("Sistema de Mudanzas API")
-                        .version("1.0.0")
-                        .description("API REST para gestión de servicios de mudanza — " +
-                                     "arquitectura por capas con patrón DAO y JDBC puro"))
+                        .version("2.0.0")
+                        .description("API REST para gestión de servicios de mudanza"))
                 .addSecurityItem(new SecurityRequirement().addList("bearerAuth"))
                 .components(new Components()
                         .addSecuritySchemes("bearerAuth",
