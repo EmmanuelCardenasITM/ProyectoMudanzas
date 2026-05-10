@@ -21,8 +21,10 @@ import java.util.regex.Pattern;
  *  1. Conecta a "master" para crear la BD "mudanzas_db" si no existe.
  *  2. Conecta a "mudanzas_db" y crea las tablas si no existen.
  *  3. Inserta datos iniciales (admin con BCrypt, etc.).
+ * 
+ * DESHABILITADO TEMPORALMENTE - usar script manual
  */
-@Component
+// @Component  // Comentado para deshabilitar
 public class DatabaseInitializer implements ApplicationRunner {
 
     private final DataSource dataSource;
@@ -82,6 +84,16 @@ public class DatabaseInitializer implements ApplicationRunner {
     // ── Paso 2: crear tablas (mismo schema que initDb.js) ────────────────────
     private void crearTablas() throws SQLException {
         String[] scripts = {
+
+            // tarifas
+            "IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='tarifas' AND xtype='U') " +
+            "CREATE TABLE tarifas ( " +
+            "  id                      INT IDENTITY(1,1) PRIMARY KEY, " +
+            "  tarifa_por_km           DECIMAL(10,2) NOT NULL DEFAULT 0, " +
+            "  tarifa_por_unidad_carga DECIMAL(10,2) NOT NULL DEFAULT 0, " +
+            "  created_at              DATETIME2     NOT NULL DEFAULT GETDATE(), " +
+            "  updated_at              DATETIME2     NOT NULL DEFAULT GETDATE() " +
+            ")",
 
             // usuarios
             "IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='usuarios' AND xtype='U') " +
@@ -205,8 +217,33 @@ public class DatabaseInitializer implements ApplicationRunner {
             "IF NOT EXISTS (SELECT 1 FROM usuarios WHERE email = 'admin@mudanzas.com') " +
             "  INSERT INTO usuarios (nombre, apellido, email, password, telefono, rol) " +
             "  VALUES ('Admin', 'Sistema', 'admin@mudanzas.com', " +
-            "          '$2a$10$qrwDJ3JT.Mw7BJcqAeBA9OtCbV9gk/ry77W/7vwI6S1edTb35bDNW', " +
+            "          'Admin123!', " +
             "          '3001234567', 'administrador')",
+
+            // Empleado de ejemplo
+            "IF NOT EXISTS (SELECT 1 FROM usuarios WHERE email = 'empleado@mudanzas.com') " +
+            "  INSERT INTO usuarios (nombre, apellido, email, password, telefono, rol) " +
+            "  VALUES ('Juan', 'Pérez', 'empleado@mudanzas.com', " +
+            "          'empleado123', " +
+            "          '3009876543', 'empleado')",
+
+            // Datos iniciales: tarifas base
+            "IF NOT EXISTS (SELECT 1 FROM tarifas) " +
+            "  INSERT INTO tarifas (tarifa_por_km, tarifa_por_unidad_carga) " +
+            "  VALUES (2500.00, 1000.00)",
+
+            // Vehículos de ejemplo
+            "IF NOT EXISTS (SELECT 1 FROM vehiculos WHERE placa = 'ABC123') " +
+            "  INSERT INTO vehiculos (placa, tipo, capacidad_kg, disponible) " +
+            "  VALUES ('ABC123', 'camioneta', 1000.00, 1)",
+
+            "IF NOT EXISTS (SELECT 1 FROM vehiculos WHERE placa = 'DEF456') " +
+            "  INSERT INTO vehiculos (placa, tipo, capacidad_kg, disponible) " +
+            "  VALUES ('DEF456', 'camion_pequeno', 3000.00, 1)",
+
+            "IF NOT EXISTS (SELECT 1 FROM vehiculos WHERE placa = 'GHI789') " +
+            "  INSERT INTO vehiculos (placa, tipo, capacidad_kg, disponible) " +
+            "  VALUES ('GHI789', 'camion_mediano', 5000.00, 1)",
         };
 
         try (Connection conn = dataSource.getConnection();
